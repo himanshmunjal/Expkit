@@ -495,6 +495,24 @@ Status: `accepted` · `provisional` (revisit once real data is in) · `supersede
 - **Bug found:** the app always simulated on synthetic data. It now uses the real extract when
   present and states which data it uses.
 
+### D-057 · Charts and report are built from results/, with one source of text · accepted
+- **Charts** live in `expkit.viz` (matplotlib, new `[viz]` extra) and take the summary tables in
+  `results/` as input. That way the report, `make figures` and the app's "Validation results"
+  tab draw identical charts. Each chart's title states the finding, the colours are Okabe-Ito
+  (colour-blind safe), and each method keeps one colour everywhere. False-positive charts show
+  the band of rates a correct 5% test would produce.
+- **One source of explanation:** each figure in `FIGURES` carries its how-to-read text and
+  takeaway. The app and `docs/report.html` render that text; `docs/REPORT.md` repeats it with
+  more narrative.
+- **Real data only:** `build_figures` and `build_report.py` refuse non-real inputs unless told
+  otherwise, so synthetic numbers can't reach a published chart.
+- **Ledger rule:** the report's calibration ledger colours a cell green when the rate's 95% CI
+  includes 5%, which is the same rule as `calibrated_at_alpha` (D-053). Rates are shown to two
+  decimals because some sit exactly on the boundary (4.38% vs 4.40%).
+- **Fact-check during writing:** one figure from the truncated first extract (max comments 5,575)
+  had survived into the draft. The current extract's maximum is 1,898; this was corrected before
+  publishing.
+
 ---
 
 ## Open questions (to resolve with real data)

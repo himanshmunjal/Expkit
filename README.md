@@ -42,7 +42,7 @@ make experiments-quick            # every experiment end-to-end on synthetic dat
 # real data (needs gcloud auth application-default login)
 make verify                       # choose T0 from table freshness
 make extract                      # T0 defaults to 2022-08-22 (data ends 2022-09-25)
-make profile && make experiments JOBS=-1 && make readouts
+make profile && make experiments JOBS=-1 && make readouts && make report
 ```
 
 ## Use it from anywhere
@@ -70,6 +70,7 @@ def my_test(control, treatment, *, alpha, rng, **opts): ...
 ```
 
 ## Docs
+- **[docs/REPORT.md](docs/REPORT.md): the validation report, with nine charts and what each one shows** (one-page web version: `make report` → `docs/report.html`)
 - [DECISION.md](DECISION.md): every architecture and methodology decision, with rationale
 - [FLOW.md](FLOW.md): run order, call flow, file-creation order, study order
 - [docs/decision_framework.md](docs/decision_framework.md): ship / hold / extend rules

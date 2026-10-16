@@ -41,7 +41,9 @@ Four views of the same project:
 | 4.6 | `experiments/srm.py` | | detection rate vs bug severity |
 | 4.7 | `experiments/multiple_testing.py` | | FWER: none / Bonferroni / Holm / BH |
 | 4.8 | `experiments/winsorization.py` | | bias-variance of capping (A/A and +20% lift at 20k/arm) |
-| 5 | `make readouts` | the parquet | `docs/example_readouts/*.md` |
+| 5 | `make readouts` | the parquet | `docs/example_readouts/*.md`, `results/example_readouts_summary.csv` |
+| 6 | `make figures` | `results/` (real only) | `docs/figures/*.png` via `expkit.viz` |
+| 7 | `make report` | `docs/figures`, `results/`, `docs/report.src.html` | `docs/report.html` (shareable page; `docs/REPORT.md` is the repo version) |
 | 6 | `make app` / `make api` / `docker build` | | UI on :8501 / REST on :8000 |
 | 7 | `expkit analyze --data exp.parquet --config configs/x.toml` | your assigned data | readout (md/json) |
 
@@ -142,6 +144,9 @@ written only after the layer it depends on existed.
 | 31 | `Makefile`, `Dockerfile`, `.github/workflows/ci.yml`, `.pre-commit-config.yaml`, `.gitignore` | operations |
 | 32 | `docs/decision_framework.md` | how to make a decision |
 | 33 | `DECISION.md`, `FLOW.md`, `README.md` | documentation |
+| 34 | `tests/test_server.py`, `tests/test_app.py` | the REST API and app, tested and run in CI |
+| 35 | `src/expkit/viz/charts.py` → `viz/__init__.py` (figure registry + captions) → `tests/test_viz.py` | charts, one source for app and report |
+| 36 | `docs/REPORT.md`, `docs/report.src.html` → `docs/build_report.py` → `docs/report.html` | the validation report |
 
 ---
 
@@ -167,3 +172,4 @@ Read bottom-up: each step only uses ideas from earlier steps.
 | **14. Integration** | `config.py` → `api.py` → `cli.py` → `server.py` → `app/streamlit_app.py` | thin wrappers over one facade | call `/analyze` with JSON |
 | **15. Experiments** | `experiments/_common.py`, then the scripts in run order (§1 step 4) | how each acceptance test is measured | predict each result before running it |
 | **16. Ops** | `Makefile`, `ci.yml`, `Dockerfile` | reproducibility and CI | run `make experiments-quick` |
+| **17. Results** | `docs/REPORT.md`, `viz/__init__.py` (FIGURES), `docs/build_report.py` | what the validation found and how each chart is read | which figure would change if the delta method were still the default? |

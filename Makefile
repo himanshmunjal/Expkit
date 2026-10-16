@@ -1,4 +1,4 @@
-.PHONY: install test test-fast lint verify extract profile experiments experiments-quick readouts app api docker
+.PHONY: install test test-fast lint verify extract profile experiments experiments-quick readouts figures app api docker
 
 # Use the project venv when it exists, so `make` works without activating it.
 VENV_BIN := $(wildcard .venv/bin/)
@@ -40,6 +40,9 @@ experiments-quick:  ## smoke run of every experiment (synthetic data, tiny)
 
 readouts:           ## step 5: the four example readouts
 	cd experiments && $(PY) example_readouts.py
+
+figures:            ## step 6: charts from results/ (real data only) into docs/figures
+	$(PY) -m expkit.viz --results results --out docs/figures
 
 app:
 	$(PY) -m streamlit run app/streamlit_app.py

@@ -16,8 +16,10 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
-      - run: pip install -e ".[dev,api,app]"   # so the REST and app tests run, not skip
+      - run: pip install -e ".[dev,api,app,viz]"   # so the REST, app and chart tests run, not skip
       - run: ruff check src tests experiments data app
       - run: pytest --cov=expkit --cov-report=term-missing
       # Every experiment script must at least run end-to-end (synthetic, tiny).
       - run: make experiments-quick
+      # ...and every chart must draw from those results.
+      - run: python -m expkit.viz --results results/synthetic --out /tmp/figures --allow-synthetic

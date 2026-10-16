@@ -1,0 +1,221 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ExpKit Validation Report</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400..700;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one 68ch reading column; figures break out to a wider white "plate", like plates in a printed paper. */
+:root {
+  --paper: #f4f6f8;          /* cool page ground */
+  --plate: #ffffff;          /* figure plates stay white in both themes: charts are drawn on white */
+  --ink: #15233b;            /* deep ink blue for text */
+  --ink-2: #4a5a72;          /* secondary text */
+  --rule: #d5dce5;           /* hairlines */
+  --accent: #1f5fae;         /* links, section numbers */
+  --pass: #0b7a5a;  --pass-bg: #ddf1ea;
+  --warn: #8a5a00;  --warn-bg: #f7ecd2;
+  --fail: #b8430f;  --fail-bg: #f9e2d6;
+  --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --body: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0f1726; --plate: #ffffff; --ink: #e6ecf5; --ink-2: #a5b3c7; --rule: #26344c;
+    --accent: #7fb0f0; --pass: #6fd3b0; --pass-bg: #123a30; --warn: #e7c46e; --warn-bg: #3a2f12;
+    --fail: #f29a6c; --fail-bg: #43220f; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0f1726; --plate: #ffffff; --ink: #e6ecf5; --ink-2: #a5b3c7; --rule: #26344c;
+  --accent: #7fb0f0; --pass: #6fd3b0; --pass-bg: #123a30; --warn: #e7c46e; --warn-bg: #3a2f12;
+  --fail: #f29a6c; --fail-bg: #43220f; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 17px; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 40px 72px;
+}
+.col { max-width: 68ch; margin-inline: auto; }
+.wide { max-width: 1120px; margin-inline: auto; }
+a { color: var(--accent); text-underline-offset: 3px; }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; letter-spacing: -0.01em; }
+h1 { font-size: clamp(2rem, 5vw, 3.1rem); line-height: 1.05; font-weight: 750; font-stretch: 112%; margin: 0 0 18px; }
+h2 { font-size: 1.45rem; line-height: 1.2; font-weight: 700; font-stretch: 106%; margin: 0; }
+h3 { font-size: 0.78rem; font-weight: 650; letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-2); margin: 0 0 6px; }
+p { margin: 0 0 14px; }
+.eyebrow { font-family: var(--mono); font-size: 0.8rem; letter-spacing: 0.06em; color: var(--accent); text-transform: uppercase; margin-bottom: 14px; }
+.dek { font-size: 1.22rem; line-height: 1.45; color: var(--ink-2); margin-bottom: 22px; }
+.scope { border-left: 3px solid var(--rule); padding: 4px 0 4px 16px; color: var(--ink-2); font-size: 0.95rem; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px 22px; font-family: var(--mono); font-size: 0.8rem; color: var(--ink-2); margin-top: 18px; }
+.meta b { color: var(--ink); font-weight: 500; }
+hr { border: 0; border-top: 1px solid var(--rule); margin: 44px auto; max-width: 1120px; }
+
+/* outcomes */
+.outcomes { list-style: none; padding: 0; margin: 18px 0 0; display: grid; gap: 0; counter-reset: o; }
+.outcomes li { display: grid; grid-template-columns: 2.2rem 1fr auto; gap: 12px; padding: 13px 0; border-top: 1px solid var(--rule); align-items: baseline; }
+.outcomes li:last-child { border-bottom: 1px solid var(--rule); }
+.outcomes .n { font-family: var(--mono); color: var(--accent); font-size: 0.85rem; }
+.outcomes .fig { font-family: var(--mono); font-size: 0.78rem; white-space: nowrap; }
+.outcomes strong { font-weight: 650; }
+
+/* ledger */
+.ledger-wrap { overflow-x: auto; margin-top: 16px; }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--rule); vertical-align: middle; }
+th { font-family: var(--display); font-weight: 650; font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-2); }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.chip { display: inline-block; font-family: var(--mono); font-size: 0.82rem; padding: 2px 8px; border-radius: 4px; min-width: 4.6em; text-align: right; font-variant-numeric: tabular-nums; }
+.chip.ok { background: var(--pass-bg); color: var(--pass); }
+.chip.low { background: var(--warn-bg); color: var(--warn); }
+.chip.high { background: var(--fail-bg); color: var(--fail); font-weight: 500; }
+.chip.na { color: var(--ink-2); }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 0.85rem; color: var(--ink-2); margin-top: 12px; }
+.legend span { display: inline-flex; gap: 6px; align-items: center; }
+
+/* sections */
+.contents { display: flex; flex-wrap: wrap; gap: 6px 16px; font-family: var(--mono); font-size: 0.82rem; margin-top: 14px; }
+section.finding { display: grid; gap: 18px; }
+.finding-head { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: baseline; }
+.finding-head .no { font-family: var(--mono); color: var(--accent); font-size: 0.9rem; }
+figure { margin: 0; background: var(--plate); border: 1px solid var(--rule); border-radius: 6px; padding: 14px; }
+figure img { display: block; width: 100%; height: auto; }
+figcaption { font-family: var(--mono); font-size: 0.75rem; color: #4a5a72; margin-top: 8px; }
+.notes { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; }
+.notes > div { min-width: 0; }
+.decision { font-size: 0.93rem; border-top: 1px solid var(--rule); padding-top: 10px; color: var(--ink-2); }
+.decision b { color: var(--ink); font-family: var(--display); font-weight: 650; }
+ul.tight { margin: 0 0 12px; padding-left: 1.1em; }
+ul.tight li { margin-bottom: 6px; }
+.fixes td:first-child { width: 34%; }
+code { font-family: var(--mono); font-size: 0.86em; background: var(--rule); padding: 1px 5px; border-radius: 3px; }
+.foot { font-size: 0.9rem; color: var(--ink-2); }
+@media (max-width: 720px) {
+  body { font-size: 16px; padding-block: 24px 48px; }
+  .notes { grid-template-columns: 1fr; gap: 6px; }
+  .outcomes li { grid-template-columns: 1.8rem 1fr; }
+  .outcomes .fig { grid-column: 2; }
+  figure { padding: 6px; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+html { scroll-behavior: smooth; }
+</style>
+
+<header class="col">
+  <div class="eyebrow">A/B-testing methods · validation report</div>
+  <h1>Which experiment statistics can you trust on heavy-tailed user data?</h1>
+  <p class="dek">ExpKit's methods were run against thousands of simulated experiments on real Stack Overflow behaviour, where the right answer is known. Some held up, some didn't, and every failure found here has been fixed in the toolkit.</p>
+  <p class="scope">The user behaviour is real (177,441 users). The assignment to groups and the treatment effects are simulated, so every number here describes how a <em>method</em> behaves, never the effect of a product change.</p>
+  <div class="meta">
+    <span>Data <b>BigQuery · Stack Overflow</b></span>
+    <span>Window <b>22 Aug – 19 Sep 2022</b></span>
+    <span>Simulated tests <b>~500,000</b></span>
+    <span>Code <b><a href="https://github.com/himanshmunjal/Expkit">github.com/himanshmunjal/Expkit</a></b></span>
+  </div>
+</header>
+
+<hr>
+
+<section class="col" aria-labelledby="outcomes">
+  <h2 id="outcomes">Outcomes</h2>
+  <ol class="outcomes">
+    <li><span class="n">01</span><span><strong>The delta method was unsafe for ratio metrics at small samples:</strong> 20.6% false positives at 100 users per arm instead of 5%. A jackknife replacement brings it to 5.9% and is now the default.</span><a class="fig" href="#f2">Fig. 2</a></li>
+    <li><span class="n">02</span><span><strong>CUPED removes 63% of the variance for answers and 74% for comments,</strong> matching theory within 1.5 points. The same test needs 2.7x to 3.8x fewer users.</span><a class="fig" href="#f3">Fig. 3</a></li>
+    <li><span class="n">03</span><span><strong>Answers are hard to move detectably.</strong> With CUPED, 80% power needs about a 15% lift at 20k users per arm. Binary activity needs about 5%.</span><a class="fig" href="#f4">Fig. 4</a></li>
+    <li><span class="n">04</span><span><strong>Checking results daily turns 5% false positives into 24–28%.</strong> O'Brien-Fleming fixes it and keeps about 93% of the power.</span><a class="fig" href="#f5">Fig. 5</a></li>
+    <li><span class="n">05</span><span><strong>mSPRT was mis-tuned and could never detect anything.</strong> Scaling its prior to 3 standard errors fixed it.</span><a class="fig" href="#f6">Fig. 6</a></li>
+    <li><span class="n">06</span><span><strong>Capping outliers buys power by measuring the wrong thing:</strong> −56% bias, and the CI contains the true lift 2% of the time. CUPED gets the same power without bias.</span><a class="fig" href="#f7">Fig. 7</a></li>
+    <li><span class="n">07</span><span><strong>The SRM check misses small logging bugs,</strong> and 20 uncorrected metrics produce a false win 63% of the time.</span><a class="fig" href="#f8">Fig. 8</a></li>
+    <li><span class="n">08</span><span><strong>The decision engine reaches the intended verdict 88–100% of the time</strong> across four scenarios, each re-run 200 times.</span><a class="fig" href="#f9">Fig. 9</a></li>
+  </ol>
+</section>
+
+<hr>
+
+<section class="col" aria-labelledby="ledger">
+  <h2 id="ledger">Calibration ledger</h2>
+  <p style="margin-top:12px">With no real effect, a test at α = 5% should flag 5% of experiments. These are the measured rates from <!--BAND--> A/A experiments per cell on real users. Green means the 95% confidence interval of the measured rate includes 5%, so the test is behaving as promised.</p>
+  <div class="ledger-wrap">
+    <!--LEDGER-->
+  </div>
+  <div class="legend">
+    <span><span class="chip ok">5.04%</span> calibrated</span>
+    <span><span class="chip low">2.28%</span> conservative: safe, loses power</span>
+    <span><span class="chip high">20.56%</span> too many false positives</span>
+  </div>
+</section>
+
+<hr>
+
+<section class="col" aria-labelledby="setup">
+  <h2 id="setup">How the validation works</h2>
+  <div style="margin-top:12px">
+    <p><strong>Population.</strong> Users who posted an answer or comment in the 56 days before 22 Aug 2022. Outcomes are measured over the next 28 days. Acceptances count only when their vote is dated inside the window, so no future information leaks into the data.</p>
+    <p><strong>Why it is hard.</strong> 88% of users post no answers in the window, and <strong>the top 1% of users post 55% of all answers</strong>. Methods that assume well-behaved data meet their limits here, which is the point of the test.</p>
+    <ul class="tight">
+      <li><strong>A/A tests:</strong> split random users into two groups, change nothing, and count how often each method calls a winner.</li>
+      <li><strong>Injected lifts:</strong> apply a known effect (for example +5% answers) and measure power, bias, and whether confidence intervals contain the truth.</li>
+      <li><strong>Scenario re-runs:</strong> push whole experiments through the decision engine 200 times each.</li>
+    </ul>
+  </div>
+  <nav class="contents" aria-label="Figures">
+    <a href="#f1">1 · False positives</a><a href="#f2">2 · Ratio metrics</a><a href="#f3">3 · CUPED</a><a href="#f4">4 · Power</a><a href="#f5">5 · Peeking</a><a href="#f6">6 · mSPRT</a><a href="#f7">7 · Capping</a><a href="#f8">8 · SRM &amp; multiplicity</a><a href="#f9">9 · Decisions</a>
+  </nav>
+</section>
+
+<!--FINDINGS-->
+
+<hr>
+
+<section class="col" aria-labelledby="changed">
+  <h2 id="changed">What changed in the toolkit</h2>
+  <div class="ledger-wrap">
+  <table class="fixes" style="margin-top:14px">
+    <thead><tr><th>Problem found</th><th>Fix</th><th>Result</th></tr></thead>
+    <tbody>
+      <tr><td>Delta method: 20.6% false positives at n = 100</td><td>Jackknife + t reference, now the default</td><td>5.9%</td></tr>
+      <tr><td>mSPRT: 0% power</td><td>Prior width in standard-error units, default 3</td><td>Power 10–21%, false positives ≤ 1.5%</td></tr>
+      <tr><td>Capping: −56% bias</td><td>Off by default; CUPED recommended</td><td>92% power, −1.5% bias</td></tr>
+      <tr><td>Outcome window ran past the end of the data</td><td>Start-date guard in the extract</td><td>Complete 28-day windows</td></tr>
+      <tr><td>Example scenarios sized on synthetic data</td><td>Re-sized from real-data power, 200 re-runs each</td><td>88–100% intended verdicts</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<hr>
+
+<section class="col" aria-labelledby="recs">
+  <h2 id="recs">Which method to use</h2>
+  <div class="ledger-wrap">
+  <table style="margin-top:14px">
+    <thead><tr><th>Situation</th><th>Use</th></tr></thead>
+    <tbody>
+      <tr><td>Count or mean metric with pre-period data</td><td><strong>CUPED</strong></td></tr>
+      <tr><td>No pre-period data</td><td><strong>Welch t-test</strong>; avoid the percentile bootstrap below 10k users per arm</td></tr>
+      <tr><td>Ratio metric (e.g. accepted / answered)</td><td><strong>Jackknife ratio test</strong></td></tr>
+      <tr><td>You will check results before the end</td><td><strong>O'Brien-Fleming</strong> boundaries</td></tr>
+      <tr><td>Unplanned or continuous monitoring</td><td><strong>mSPRT</strong>, prior width ≈ 3 SE</td></tr>
+      <tr><td>Several metrics decide the test</td><td><strong>Holm</strong>; keep guardrails uncorrected</td></tr>
+      <tr><td>Every readout</td><td><strong>SRM check first</strong>, but a pass is not proof of clean logging</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<hr>
+
+<section class="col foot" aria-labelledby="limits">
+  <h2 id="limits">Limitations</h2>
+  <ul class="tight" style="margin-top:12px">
+    <li>Effects are simulated as multiplicative changes to each user's counts. Real treatments can also change who is active, or spill over between users.</li>
+    <li>One community and one month (Stack Overflow, Aug–Sep 2022). Other products have different tails, so the exact numbers will differ; the method carries over.</li>
+    <li>Peeking is simulated as users accruing over 28 looks, not as calendar days with weekly cycles.</li>
+    <li>The jackknife still runs at 6–7% between 500 and 1,000 users per arm on this ratio metric.</li>
+  </ul>
+  <p>Every decision behind these results, with its reasoning, is logged in <code>DECISION.md</code> in the repository. To reproduce: <code>make experiments</code>, <code>make readouts</code>, <code>make figures</code>.</p>
+</section>

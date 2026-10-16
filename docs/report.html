@@ -1,0 +1,355 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ExpKit Validation Report</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400..700;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one 68ch reading column; figures break out to a wider white "plate", like plates in a printed paper. */
+:root {
+  --paper: #f4f6f8;          /* cool page ground */
+  --plate: #ffffff;          /* figure plates stay white in both themes: charts are drawn on white */
+  --ink: #15233b;            /* deep ink blue for text */
+  --ink-2: #4a5a72;          /* secondary text */
+  --rule: #d5dce5;           /* hairlines */
+  --accent: #1f5fae;         /* links, section numbers */
+  --pass: #0b7a5a;  --pass-bg: #ddf1ea;
+  --warn: #8a5a00;  --warn-bg: #f7ecd2;
+  --fail: #b8430f;  --fail-bg: #f9e2d6;
+  --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --body: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0f1726; --plate: #ffffff; --ink: #e6ecf5; --ink-2: #a5b3c7; --rule: #26344c;
+    --accent: #7fb0f0; --pass: #6fd3b0; --pass-bg: #123a30; --warn: #e7c46e; --warn-bg: #3a2f12;
+    --fail: #f29a6c; --fail-bg: #43220f; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0f1726; --plate: #ffffff; --ink: #e6ecf5; --ink-2: #a5b3c7; --rule: #26344c;
+  --accent: #7fb0f0; --pass: #6fd3b0; --pass-bg: #123a30; --warn: #e7c46e; --warn-bg: #3a2f12;
+  --fail: #f29a6c; --fail-bg: #43220f; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 17px; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 40px 72px;
+}
+.col { max-width: 68ch; margin-inline: auto; }
+.wide { max-width: 1120px; margin-inline: auto; }
+a { color: var(--accent); text-underline-offset: 3px; }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; letter-spacing: -0.01em; }
+h1 { font-size: clamp(2rem, 5vw, 3.1rem); line-height: 1.05; font-weight: 750; font-stretch: 112%; margin: 0 0 18px; }
+h2 { font-size: 1.45rem; line-height: 1.2; font-weight: 700; font-stretch: 106%; margin: 0; }
+h3 { font-size: 0.78rem; font-weight: 650; letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-2); margin: 0 0 6px; }
+p { margin: 0 0 14px; }
+.eyebrow { font-family: var(--mono); font-size: 0.8rem; letter-spacing: 0.06em; color: var(--accent); text-transform: uppercase; margin-bottom: 14px; }
+.dek { font-size: 1.22rem; line-height: 1.45; color: var(--ink-2); margin-bottom: 22px; }
+.scope { border-left: 3px solid var(--rule); padding: 4px 0 4px 16px; color: var(--ink-2); font-size: 0.95rem; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px 22px; font-family: var(--mono); font-size: 0.8rem; color: var(--ink-2); margin-top: 18px; }
+.meta b { color: var(--ink); font-weight: 500; }
+hr { border: 0; border-top: 1px solid var(--rule); margin: 44px auto; max-width: 1120px; }
+
+/* outcomes */
+.outcomes { list-style: none; padding: 0; margin: 18px 0 0; display: grid; gap: 0; counter-reset: o; }
+.outcomes li { display: grid; grid-template-columns: 2.2rem 1fr auto; gap: 12px; padding: 13px 0; border-top: 1px solid var(--rule); align-items: baseline; }
+.outcomes li:last-child { border-bottom: 1px solid var(--rule); }
+.outcomes .n { font-family: var(--mono); color: var(--accent); font-size: 0.85rem; }
+.outcomes .fig { font-family: var(--mono); font-size: 0.78rem; white-space: nowrap; }
+.outcomes strong { font-weight: 650; }
+
+/* ledger */
+.ledger-wrap { overflow-x: auto; margin-top: 16px; }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--rule); vertical-align: middle; }
+th { font-family: var(--display); font-weight: 650; font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-2); }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.chip { display: inline-block; font-family: var(--mono); font-size: 0.82rem; padding: 2px 8px; border-radius: 4px; min-width: 4.6em; text-align: right; font-variant-numeric: tabular-nums; }
+.chip.ok { background: var(--pass-bg); color: var(--pass); }
+.chip.low { background: var(--warn-bg); color: var(--warn); }
+.chip.high { background: var(--fail-bg); color: var(--fail); font-weight: 500; }
+.chip.na { color: var(--ink-2); }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 0.85rem; color: var(--ink-2); margin-top: 12px; }
+.legend span { display: inline-flex; gap: 6px; align-items: center; }
+
+/* sections */
+.contents { display: flex; flex-wrap: wrap; gap: 6px 16px; font-family: var(--mono); font-size: 0.82rem; margin-top: 14px; }
+section.finding { display: grid; gap: 18px; }
+.finding-head { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: baseline; }
+.finding-head .no { font-family: var(--mono); color: var(--accent); font-size: 0.9rem; }
+figure { margin: 0; background: var(--plate); border: 1px solid var(--rule); border-radius: 6px; padding: 14px; }
+figure img { display: block; width: 100%; height: auto; }
+figcaption { font-family: var(--mono); font-size: 0.75rem; color: #4a5a72; margin-top: 8px; }
+.notes { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; }
+.notes > div { min-width: 0; }
+.decision { font-size: 0.93rem; border-top: 1px solid var(--rule); padding-top: 10px; color: var(--ink-2); }
+.decision b { color: var(--ink); font-family: var(--display); font-weight: 650; }
+ul.tight { margin: 0 0 12px; padding-left: 1.1em; }
+ul.tight li { margin-bottom: 6px; }
+.fixes td:first-child { width: 34%; }
+code { font-family: var(--mono); font-size: 0.86em; background: var(--rule); padding: 1px 5px; border-radius: 3px; }
+.foot { font-size: 0.9rem; color: var(--ink-2); }
+@media (max-width: 720px) {
+  body { font-size: 16px; padding-block: 24px 48px; }
+  .notes { grid-template-columns: 1fr; gap: 6px; }
+  .outcomes li { grid-template-columns: 1.8rem 1fr; }
+  .outcomes .fig { grid-column: 2; }
+  figure { padding: 6px; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+html { scroll-behavior: smooth; }
+</style>
+
+<header class="col">
+  <div class="eyebrow">A/B-testing methods · validation report</div>
+  <h1>Which experiment statistics can you trust on heavy-tailed user data?</h1>
+  <p class="dek">ExpKit's methods were run against thousands of simulated experiments on real Stack Overflow behaviour, where the right answer is known. Some held up, some didn't, and every failure found here has been fixed in the toolkit.</p>
+  <p class="scope">The user behaviour is real (177,441 users). The assignment to groups and the treatment effects are simulated, so every number here describes how a <em>method</em> behaves, never the effect of a product change.</p>
+  <div class="meta">
+    <span>Data <b>BigQuery · Stack Overflow</b></span>
+    <span>Window <b>22 Aug – 19 Sep 2022</b></span>
+    <span>Simulated tests <b>626,000</b></span>
+    <span>Code <b><a href="https://github.com/himanshmunjal/Expkit">github.com/himanshmunjal/Expkit</a></b></span>
+  </div>
+</header>
+
+<hr>
+
+<section class="col" aria-labelledby="outcomes">
+  <h2 id="outcomes">Outcomes</h2>
+  <ol class="outcomes">
+    <li><span class="n">01</span><span><strong>The delta method was unsafe for ratio metrics at small samples:</strong> 20.6% false positives at 100 users per arm instead of 5%. A jackknife replacement brings it to 5.9% and is now the default.</span><a class="fig" href="#f2">Fig. 2</a></li>
+    <li><span class="n">02</span><span><strong>CUPED removes 63% of the variance for answers and 74% for comments,</strong> matching theory within 1.5 points. The same test needs 2.7x to 3.8x fewer users.</span><a class="fig" href="#f3">Fig. 3</a></li>
+    <li><span class="n">03</span><span><strong>Answers are hard to move detectably.</strong> With CUPED, 80% power needs about a 15% lift at 20k users per arm. Binary activity needs about 5%.</span><a class="fig" href="#f4">Fig. 4</a></li>
+    <li><span class="n">04</span><span><strong>Checking results daily turns 5% false positives into 24–28%.</strong> O'Brien-Fleming fixes it and keeps about 93% of the power.</span><a class="fig" href="#f5">Fig. 5</a></li>
+    <li><span class="n">05</span><span><strong>mSPRT was mis-tuned and could never detect anything.</strong> Scaling its prior to 3 standard errors fixed it.</span><a class="fig" href="#f6">Fig. 6</a></li>
+    <li><span class="n">06</span><span><strong>Capping outliers buys power by measuring the wrong thing:</strong> −56% bias, and the CI contains the true lift 2% of the time. CUPED gets the same power without bias.</span><a class="fig" href="#f7">Fig. 7</a></li>
+    <li><span class="n">07</span><span><strong>The SRM check misses small logging bugs,</strong> and 20 uncorrected metrics produce a false win 63% of the time.</span><a class="fig" href="#f8">Fig. 8</a></li>
+    <li><span class="n">08</span><span><strong>The decision engine reaches the intended verdict 88–100% of the time</strong> across four scenarios, each re-run 200 times.</span><a class="fig" href="#f9">Fig. 9</a></li>
+  </ol>
+</section>
+
+<hr>
+
+<section class="col" aria-labelledby="ledger">
+  <h2 id="ledger">Calibration ledger</h2>
+  <p style="margin-top:12px">With no real effect, a test at α = 5% should flag 5% of experiments. These are the measured rates from 5,000 A/A experiments per cell on real users. Green means the 95% confidence interval of the measured rate includes 5%, so the test is behaving as promised.</p>
+  <div class="ledger-wrap">
+    <table><thead><tr><th>Metric</th><th>Method</th><th class="num">100 / arm</th><th class="num">1,000 / arm</th><th class="num">10,000 / arm</th></tr></thead><tbody><tr><td>Answers posted</td><td>Welch t-test</td><td class="num"><span class="chip low">2.28%</span></td><td class="num"><span class="chip low">3.48%</span></td><td class="num"><span class="chip ok">4.98%</span></td></tr><tr><td>Answers posted</td><td>CUPED</td><td class="num"><span class="chip low">3.70%</span></td><td class="num"><span class="chip ok">4.40%</span></td><td class="num"><span class="chip ok">4.84%</span></td></tr><tr><td>Answers posted</td><td>Percentile bootstrap</td><td class="num"><span class="chip high">8.52%</span></td><td class="num"><span class="chip high">6.66%</span></td><td class="num"><span class="chip na">not run</span></td></tr><tr><td>Answers posted</td><td>Mann-Whitney</td><td class="num"><span class="chip ok">4.68%</span></td><td class="num"><span class="chip ok">5.24%</span></td><td class="num"><span class="chip ok">5.20%</span></td></tr><tr><td>Comments posted</td><td>Welch t-test</td><td class="num"><span class="chip low">1.90%</span></td><td class="num"><span class="chip low">3.34%</span></td><td class="num"><span class="chip ok">4.84%</span></td></tr><tr><td>Comments posted</td><td>Percentile bootstrap</td><td class="num"><span class="chip high">9.20%</span></td><td class="num"><span class="chip high">6.86%</span></td><td class="num"><span class="chip na">not run</span></td></tr><tr><td>Active (28d)</td><td>Welch t-test</td><td class="num"><span class="chip ok">4.64%</span></td><td class="num"><span class="chip ok">5.48%</span></td><td class="num"><span class="chip ok">5.04%</span></td></tr><tr><td>Accepted-answer rate</td><td>Delta method</td><td class="num"><span class="chip high">20.56%</span></td><td class="num"><span class="chip high">10.44%</span></td><td class="num"><span class="chip high">6.14%</span></td></tr><tr><td>Accepted-answer rate</td><td>Jackknife (new default)</td><td class="num"><span class="chip high">5.86%</span></td><td class="num"><span class="chip high">6.38%</span></td><td class="num"><span class="chip ok">5.52%</span></td></tr><tr><td>Accepted-answer rate</td><td>Naive per-user ratio</td><td class="num"><span class="chip low">4.38%</span></td><td class="num"><span class="chip ok">4.90%</span></td><td class="num"><span class="chip ok">5.08%</span></td></tr></tbody></table>
+  </div>
+  <div class="legend">
+    <span><span class="chip ok">5.04%</span> calibrated</span>
+    <span><span class="chip low">2.28%</span> conservative: safe, loses power</span>
+    <span><span class="chip high">20.56%</span> too many false positives</span>
+  </div>
+</section>
+
+<hr>
+
+<section class="col" aria-labelledby="setup">
+  <h2 id="setup">How the validation works</h2>
+  <div style="margin-top:12px">
+    <p><strong>Population.</strong> Users who posted an answer or comment in the 56 days before 22 Aug 2022. Outcomes are measured over the next 28 days. Acceptances count only when their vote is dated inside the window, so no future information leaks into the data.</p>
+    <p><strong>Why it is hard.</strong> 88% of users post no answers in the window, and <strong>the top 1% of users post 55% of all answers</strong>. Methods that assume well-behaved data meet their limits here, which is the point of the test.</p>
+    <ul class="tight">
+      <li><strong>A/A tests:</strong> split random users into two groups, change nothing, and count how often each method calls a winner.</li>
+      <li><strong>Injected lifts:</strong> apply a known effect (for example +5% answers) and measure power, bias, and whether confidence intervals contain the truth.</li>
+      <li><strong>Scenario re-runs:</strong> push whole experiments through the decision engine 200 times each.</li>
+    </ul>
+  </div>
+  <nav class="contents" aria-label="Figures">
+    <a href="#f1">1 · False positives</a><a href="#f2">2 · Ratio metrics</a><a href="#f3">3 · CUPED</a><a href="#f4">4 · Power</a><a href="#f5">5 · Peeking</a><a href="#f6">6 · mSPRT</a><a href="#f7">7 · Capping</a><a href="#f8">8 · SRM &amp; multiplicity</a><a href="#f9">9 · Decisions</a>
+  </nav>
+</section>
+
+
+<hr>
+<section class="finding wide" id="f1" aria-labelledby="h1">
+  <div class="col finding-head"><span class="no">Fig. 1</span>
+    <h2 id="h1">Which tests keep their promise of 5% false positives?</h2></div>
+  <figure><img src="figures/01_aa_false_positive_rates.png" alt="False positives by method and sample size: On heavy-tailed counts (answers, comments) at small samples, Welch is conservative (1.9-3.5% at n &lt;= 1,000: safe, but it loses power) and the percentile bootstrap is anti-conservative (8.5-9.2% at n = 100). Everything is calibrated by 10k users per arm. The delta method on the accepted-answer rate is the outlier: 20.6% at n = 100."
+       ><figcaption>Fig. 1 · False positives by method and sample size</figcaption></figure>
+  <div class="col">
+    <div class="notes">
+      <div><h3>How to read it</h3><p>Each point is 5,000 A/A experiments: two random groups of real users, no change applied. A correct test at alpha = 5% should flag about 5% of them; the grey band is the range a correct test would land in by chance.</p></div>
+      <div><h3>What it shows</h3><p>On heavy-tailed counts (answers, comments) at small samples, Welch is conservative (1.9-3.5% at n &lt;= 1,000: safe, but it loses power) and the percentile bootstrap is anti-conservative (8.5-9.2% at n = 100). Everything is calibrated by 10k users per arm. The delta method on the accepted-answer rate is the outlier: 20.6% at n = 100.</p></div>
+    </div>
+    <p class="decision"><b>What the toolkit does about it.</b> Ship decisions are gated on the false-positive rate at alpha; the percentile bootstrap is not recommended below 10k users per arm on heavy-tailed metrics. (D-053, D-054)</p>
+  </div>
+</section>
+
+<hr>
+<section class="finding wide" id="f2" aria-labelledby="h2">
+  <div class="col finding-head"><span class="no">Fig. 2</span>
+    <h2 id="h2">Fixing ratio metrics: the delta method vs the jackknife</h2></div>
+  <figure><img src="figures/02_ratio_method_fix.png" alt="Ratio metrics: delta method vs jackknife: The delta method&#x27;s variance formula underestimates how much one heavy answerer moves the ratio, so it flags 20.6% of null experiments at 100 users per arm and 10.4% at 1,000. The leave-one-user-out jackknife with a t reference brings this to 5.9% and 6.4% and is now the default. The naive per-user ratio looks calibrated but answers a different question and is 18% biased."
+       ><figcaption>Fig. 2 · Ratio metrics: delta method vs jackknife</figcaption></figure>
+  <div class="col">
+    <div class="notes">
+      <div><h3>How to read it</h3><p>Accepted-answer rate = accepted answers / answers, summed per arm. Left: false-positive rate with no real effect. Right: bias of the estimated lift when a true +5% lift is injected.</p></div>
+      <div><h3>What it shows</h3><p>The delta method&#x27;s variance formula underestimates how much one heavy answerer moves the ratio, so it flags 20.6% of null experiments at 100 users per arm and 10.4% at 1,000. The leave-one-user-out jackknife with a t reference brings this to 5.9% and 6.4% and is now the default. The naive per-user ratio looks calibrated but answers a different question and is 18% biased.</p></div>
+    </div>
+    <p class="decision"><b>What the toolkit does about it.</b> The jackknife ratio test is now the default for ratio metrics. (D-050)</p>
+  </div>
+</section>
+
+<hr>
+<section class="finding wide" id="f3" aria-labelledby="h3">
+  <div class="col finding-head"><span class="no">Fig. 3</span>
+    <h2 id="h3">How much variance does pre-period data remove?</h2></div>
+  <figure><img src="figures/03_cuped_variance_reduction.png" alt="CUPED variance reduction: Observed reduction matches theory within 1.5 points: 63% for answers and 74% for comments, so the same test needs 2.7x and 3.8x fewer users. For &#x27;active in 28 days&#x27; the pre-period predicts little (4%), so CUPED adds almost nothing there."
+       ><figcaption>Fig. 3 · CUPED variance reduction</figcaption></figure>
+  <div class="col">
+    <div class="notes">
+      <div><h3>How to read it</h3><p>CUPED subtracts the part of each user&#x27;s outcome predicted by their own pre-experiment activity. Theory says it removes rho-squared of the variance (rho = pre/post correlation).</p></div>
+      <div><h3>What it shows</h3><p>Observed reduction matches theory within 1.5 points: 63% for answers and 74% for comments, so the same test needs 2.7x and 3.8x fewer users. For &#x27;active in 28 days&#x27; the pre-period predicts little (4%), so CUPED adds almost nothing there.</p></div>
+    </div>
+    <p class="decision"><b>What the toolkit does about it.</b> CUPED is the default for metrics with pre-period data. (D-025, D-054)</p>
+  </div>
+</section>
+
+<hr>
+<section class="finding wide" id="f4" aria-labelledby="h4">
+  <div class="col finding-head"><span class="no">Fig. 4</span>
+    <h2 id="h4">How big a lift can you actually detect?</h2></div>
+  <figure><img src="figures/04_power_curves.png" alt="Power curves: Binary activity is easy: a 5% lift is found about 80% of the time at 20k users per arm. Answers are hard: even with CUPED a +10% lift at 20k per arm is found only 43% of the time (Welch: 20%), so about a 15% lift is needed at that size. On the ratio metric at 1,000/arm the delta method&#x27;s apparent extra &#x27;power&#x27; at tiny lifts (11% at +0.5%) is just its false-positive excess."
+       ><figcaption>Fig. 4 · Power curves</figcaption></figure>
+  <div class="col">
+    <div class="notes">
+      <div><h3>How to read it</h3><p>Share of 2,000 simulated experiments that detected a known injected lift, by lift size and users per arm. Dotted line: the conventional 80% power target.</p></div>
+      <div><h3>What it shows</h3><p>Binary activity is easy: a 5% lift is found about 80% of the time at 20k users per arm. Answers are hard: even with CUPED a +10% lift at 20k per arm is found only 43% of the time (Welch: 20%), so about a 15% lift is needed at that size. On the ratio metric at 1,000/arm the delta method&#x27;s apparent extra &#x27;power&#x27; at tiny lifts (11% at +0.5%) is just its false-positive excess.</p></div>
+    </div>
+    <p class="decision"><b>What the toolkit does about it.</b> Pick the primary metric with the power calculator before launch; answers posted is a weak primary metric for small or medium experiments. (D-049)</p>
+  </div>
+</section>
+
+<hr>
+<section class="finding wide" id="f5" aria-labelledby="h5">
+  <div class="col finding-head"><span class="no">Fig. 5</span>
+    <h2 id="h5">What happens when you check results every day?</h2></div>
+  <figure><img src="figures/05_peeking.png" alt="Peeking and sequential tests: Stopping at the first p &lt; 0.05 finds a false winner in 24-28% of null experiments. O&#x27;Brien-Fleming and Pocock keep false positives at or below ~5%, and O&#x27;Brien-Fleming keeps about 93% of fixed-horizon power (30% vs 33%; 46% vs 49%) while stopping 8-13% earlier on average. mSPRT is the most conservative (0.8-1.4%) and gives up about half the power."
+       ><figcaption>Fig. 5 · Peeking and sequential tests</figcaption></figure>
+  <div class="col">
+    <div class="notes">
+      <div><h3>How to read it</h3><p>28 daily looks at an experiment with 10k users per arm. Left panels: share of A/A experiments declared significant by each day. Right: with a real lift, power against the average share of the planned sample used before stopping.</p></div>
+      <div><h3>What it shows</h3><p>Stopping at the first p &lt; 0.05 finds a false winner in 24-28% of null experiments. O&#x27;Brien-Fleming and Pocock keep false positives at or below ~5%, and O&#x27;Brien-Fleming keeps about 93% of fixed-horizon power (30% vs 33%; 46% vs 49%) while stopping 8-13% earlier on average. mSPRT is the most conservative (0.8-1.4%) and gives up about half the power.</p></div>
+    </div>
+    <p class="decision"><b>What the toolkit does about it.</b> If you will look early, use O&#x27;Brien-Fleming; use mSPRT only when looks can&#x27;t be planned. (D-051)</p>
+  </div>
+</section>
+
+<hr>
+<section class="finding wide" id="f6" aria-labelledby="h6">
+  <div class="col finding-head"><span class="no">Fig. 6</span>
+    <h2 id="h6">Tuning mSPRT so it can detect anything at all</h2></div>
+  <figure><img src="figures/06_msprt_tau_sweep.png" alt="Tuning mSPRT: The original setting (tau = 5% of the metric mean) was about 0.5 SE for answers, where mSPRT can never reject. Power peaks at 3-5 SE and false positives stay under 1.5% at every tau, so the default is now 3 SE."
+       ><figcaption>Fig. 6 · Tuning mSPRT</figcaption></figure>
+  <div class="col">
+    <div class="notes">
+      <div><h3>How to read it</h3><p>mSPRT mixes over possible effect sizes with a normal prior of width tau. Here tau is expressed in standard errors of the difference at the planned final look.</p></div>
+      <div><h3>What it shows</h3><p>The original setting (tau = 5% of the metric mean) was about 0.5 SE for answers, where mSPRT can never reject. Power peaks at 3-5 SE and false positives stay under 1.5% at every tau, so the default is now 3 SE.</p></div>
+    </div>
+    <p class="decision"><b>What the toolkit does about it.</b> mSPRT&#x27;s prior width is set in standard errors at the planned final look, default 3. (D-051)</p>
+  </div>
+</section>
+
+<hr>
+<section class="finding wide" id="f7" aria-labelledby="h7">
+  <div class="col finding-head"><span class="no">Fig. 7</span>
+    <h2 id="h7">Capping outliers vs CUPED</h2></div>
+  <figure><img src="figures/07_capping_tradeoff.png" alt="Capping outliers vs CUPED: Capping at p99 reaches the same power as CUPED (91% vs 92% on answers) but underestimates the lift by 56% and its CI almost never contains the truth (2%). The lift sits mostly in heavy users, which is exactly what capping removes. CUPED gets the power with 1-2% bias, so capping is not used by default."
+       ><figcaption>Fig. 7 · Capping outliers vs CUPED</figcaption></figure>
+  <div class="col">
+    <div class="notes">
+      <div><h3>How to read it</h3><p>A +20% lift injected at 20k users per arm. Capping (winsorising) replaces values above a percentile with that percentile. Bias: how far the estimated lift is from the true one. Coverage: how often the 95% CI contains the true lift (should be 95%).</p></div>
+      <div><h3>What it shows</h3><p>Capping at p99 reaches the same power as CUPED (91% vs 92% on answers) but underestimates the lift by 56% and its CI almost never contains the truth (2%). The lift sits mostly in heavy users, which is exactly what capping removes. CUPED gets the power with 1-2% bias, so capping is not used by default.</p></div>
+    </div>
+    <p class="decision"><b>What the toolkit does about it.</b> No capping by default; CUPED gives the power without the bias. (D-052)</p>
+  </div>
+</section>
+
+<hr>
+<section class="finding wide" id="f8" aria-labelledby="h8">
+  <div class="col finding-head"><span class="no">Fig. 8</span>
+    <h2 id="h8">Two safety checks: SRM and multiple testing</h2></div>
+  <figure><img src="figures/08_srm_and_multiplicity.png" alt="SRM sensitivity and multiple testing: SRM catches a 5% loss 61% of the time and a 2% loss only 3%, so a passing check does not prove logging is clean. Without correction, 20 null metrics produce a false &#x27;win&#x27; 63% of the time; Holm or Bonferroni bring it to 5.9%, and Benjamini-Hochberg (which controls a different error rate) to 6.2%."
+       ><figcaption>Fig. 8 · SRM sensitivity and multiple testing</figcaption></figure>
+  <div class="col">
+    <div class="notes">
+      <div><h3>How to read it</h3><p>Left: a simulated logging bug drops a share of treatment users; how often does the chi-square sample-ratio check (p &lt; 0.001) catch it? Right: 20 metrics with no real effect; how often is at least one flagged?</p></div>
+      <div><h3>What it shows</h3><p>SRM catches a 5% loss 61% of the time and a 2% loss only 3%, so a passing check does not prove logging is clean. Without correction, 20 null metrics produce a false &#x27;win&#x27; 63% of the time; Holm or Bonferroni bring it to 5.9%, and Benjamini-Hochberg (which controls a different error rate) to 6.2%.</p></div>
+    </div>
+    <p class="decision"><b>What the toolkit does about it.</b> SRM gates every readout. Holm controls several decision metrics; guardrails stay uncorrected on purpose. (D-027, D-028, D-033)</p>
+  </div>
+</section>
+
+<hr>
+<section class="finding wide" id="f9" aria-labelledby="h9">
+  <div class="col finding-head"><span class="no">Fig. 9</span>
+    <h2 id="h9">Does the decision engine make the right call?</h2></div>
+  <figure><img src="figures/09_readout_decisions.png" alt="Ship decisions in repeated experiments: The engine reaches the intended verdict 96% (clear win), 94% (well-powered null), 88% (inconclusive) and 100% (SRM failure) of the time. The misses are mostly guardrail false alarms, a deliberate choice: guardrails are not multiplicity-corrected because a missed harm costs more."
+       ><figcaption>Fig. 9 · Ship decisions in repeated experiments</figcaption></figure>
+  <div class="col">
+    <div class="notes">
+      <div><h3>How to read it</h3><p>Four scenarios, each re-run 200 times on fresh samples of real users through the full decision engine (SRM gate, guardrails, primary metric, MDE rule).</p></div>
+      <div><h3>What it shows</h3><p>The engine reaches the intended verdict 96% (clear win), 94% (well-powered null), 88% (inconclusive) and 100% (SRM failure) of the time. The misses are mostly guardrail false alarms, a deliberate choice: guardrails are not multiplicity-corrected because a missed harm costs more.</p></div>
+    </div>
+    <p class="decision"><b>What the toolkit does about it.</b> Each example readout states how often its verdict occurred across the re-runs, so no single lucky draw is presented as typical. (D-049)</p>
+  </div>
+</section>
+
+<hr>
+
+<section class="col" aria-labelledby="changed">
+  <h2 id="changed">What changed in the toolkit</h2>
+  <div class="ledger-wrap">
+  <table class="fixes" style="margin-top:14px">
+    <thead><tr><th>Problem found</th><th>Fix</th><th>Result</th></tr></thead>
+    <tbody>
+      <tr><td>Delta method: 20.6% false positives at n = 100</td><td>Jackknife + t reference, now the default</td><td>5.9%</td></tr>
+      <tr><td>mSPRT: 0% power</td><td>Prior width in standard-error units, default 3</td><td>Power 10–21%, false positives ≤ 1.5%</td></tr>
+      <tr><td>Capping: −56% bias</td><td>Off by default; CUPED recommended</td><td>92% power, −1.5% bias</td></tr>
+      <tr><td>Outcome window ran past the end of the data</td><td>Start-date guard in the extract</td><td>Complete 28-day windows</td></tr>
+      <tr><td>Example scenarios sized on synthetic data</td><td>Re-sized from real-data power, 200 re-runs each</td><td>88–100% intended verdicts</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<hr>
+
+<section class="col" aria-labelledby="recs">
+  <h2 id="recs">Which method to use</h2>
+  <div class="ledger-wrap">
+  <table style="margin-top:14px">
+    <thead><tr><th>Situation</th><th>Use</th></tr></thead>
+    <tbody>
+      <tr><td>Count or mean metric with pre-period data</td><td><strong>CUPED</strong></td></tr>
+      <tr><td>No pre-period data</td><td><strong>Welch t-test</strong>; avoid the percentile bootstrap below 10k users per arm</td></tr>
+      <tr><td>Ratio metric (e.g. accepted / answered)</td><td><strong>Jackknife ratio test</strong></td></tr>
+      <tr><td>You will check results before the end</td><td><strong>O'Brien-Fleming</strong> boundaries</td></tr>
+      <tr><td>Unplanned or continuous monitoring</td><td><strong>mSPRT</strong>, prior width ≈ 3 SE</td></tr>
+      <tr><td>Several metrics decide the test</td><td><strong>Holm</strong>; keep guardrails uncorrected</td></tr>
+      <tr><td>Every readout</td><td><strong>SRM check first</strong>, but a pass is not proof of clean logging</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<hr>
+
+<section class="col foot" aria-labelledby="limits">
+  <h2 id="limits">Limitations</h2>
+  <ul class="tight" style="margin-top:12px">
+    <li>Effects are simulated as multiplicative changes to each user's counts. Real treatments can also change who is active, or spill over between users.</li>
+    <li>One community and one month (Stack Overflow, Aug–Sep 2022). Other products have different tails, so the exact numbers will differ; the method carries over.</li>
+    <li>Peeking is simulated as users accruing over 28 looks, not as calendar days with weekly cycles.</li>
+    <li>The jackknife still runs at 6–7% between 500 and 1,000 users per arm on this ratio metric.</li>
+  </ul>
+  <p>Every decision behind these results, with its reasoning, is logged in <code>DECISION.md</code> in the repository. To reproduce: <code>make experiments</code>, <code>make readouts</code>, <code>make figures</code>.</p>
+</section>

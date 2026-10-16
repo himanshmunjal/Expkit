@@ -393,7 +393,10 @@ Status: `accepted` · `provisional` (revisit once real data is in) · `supersede
 - **Finding:** on the real extract, scenario sizes chosen on synthetic data were badly
   underpowered. Real `answers_posted` is far more heavy-tailed. The CUPED 95% CI half-width is
   about ±0.047 at 20k/arm and ±0.024 at the full population (~80k/arm), against a control mean of
-  ~0.46. **Even the full population needs a ~14% lift for 80% power on this metric.**
+  ~0.46. **80% power needs ~15% lift at 20k/arm and ~7.5% even at the full population.**
+  (Corrected 2026-10-17: an earlier version said ~14% at full population. That multiplied
+  the power factor 2.8 by the CI half-width instead of the SE. Recomputed from the CUPED residual
+  SD of 2.42; it agrees with the winsorization run, where +20% at 20k/arm was detected 92% of the time.)
 - **Finding:** publishing a single draw per scenario hid how often the decision rules disagree
   with a scenario's intent. Uncorrected guardrails (D-033) plus heavy tails gave false alarms
   on single draws.

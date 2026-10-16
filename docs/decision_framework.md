@@ -32,8 +32,8 @@ extract (DECISION D-050 to D-054):
 | Ratio of sums (e.g. accepted / answers) | **jackknife_ratio** (default) | delta at small n; naive per-user ratio | Delta had 20% false positives at n = 100 and 10% at 1,000. Naive is biased (+18%) |
 | Binary | **Welch** (or CUPED if a pre-period exists) | none | Calibrated at all sizes tested |
 
-**Sample size.** `answers_posted` is hard to move detectably. Even the full population
-(~80k/arm) with CUPED needs about a **14% lift** for 80% power. Pick primary metrics with the
+**Sample size.** `answers_posted` is hard to move detectably. With CUPED, 80% power needs
+about a **15% lift at 20k users per arm** and still ~7.5% at the full population (~80k/arm). Pick primary metrics with the
 power calculator before launch, not after.
 
 **Monitoring.** If you will look early, use **O'Brien-Fleming**. It keeps about 93% of

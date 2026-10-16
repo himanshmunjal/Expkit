@@ -16,8 +16,8 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
-      - run: pip install -e ".[dev]"
-      - run: ruff check src tests experiments data
+      - run: pip install -e ".[dev,api,app]"   # so the REST and app tests run, not skip
+      - run: ruff check src tests experiments data app
       - run: pytest --cov=expkit --cov-report=term-missing
       # Every experiment script must at least run end-to-end (synthetic, tiny).
       - run: make experiments-quick

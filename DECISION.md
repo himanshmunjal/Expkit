@@ -481,6 +481,20 @@ Status: `accepted` · `provisional` (revisit once real data is in) · `supersede
   to `results/synthetic/`, including the example readouts. Verified: a quick run leaves the real
   files byte-identical.
 
+### D-056 · Every integration surface is tested, in CI too · accepted
+- The REST API and Streamlit app had never been run. They now have tests:
+  `tests/test_server.py` covers every endpoint, the 422 error paths and strict-JSON output
+  when a result has NaN (Mann-Whitney has no CI). `tests/test_app.py` uses Streamlit's headless
+  `AppTest` and clicks both simulation buttons.
+- CI previously installed only `[dev]`, so those tests would have been **skipped**, not run. It
+  now installs `[dev,api,app]` and lints `app/` too. `httpx` was added to `[dev]` for the
+  FastAPI test client.
+- Verified by hand: a live `uvicorn` server analysed a 6,000-user real-data sample over HTTP
+  in 0.07 s. The Docker image builds (1.03 GB). The API container answers `/health` and `/power`,
+  and the Streamlit container passes `/_stcore/health`.
+- **Bug found:** the app always simulated on synthetic data. It now uses the real extract when
+  present and states which data it uses.
+
 ---
 
 ## Open questions (to resolve with real data)

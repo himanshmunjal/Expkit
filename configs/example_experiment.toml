@@ -1,0 +1,37 @@
+# Pre-registered experiment config. Write it BEFORE looking at results.
+# Used by: `expkit analyze --data <file> --config <this>`, the REST /analyze
+# endpoint (same structure as JSON), and the Streamlit "Analyze" tab.
+
+[experiment]
+name = "answer-composer-v2"
+arm_column = "arm"
+control = "control"
+treatment = "treatment"
+expected_split = [0.5, 0.5]
+alpha = 0.05
+method = "cuped"          # falls back per metric: ratio -> delta, no covariate -> welch
+mde = 0.03                # relative to control mean; used for the "well-powered null" call
+srm_threshold = 0.001
+simulated = false
+
+[primary]
+name = "answers_posted"
+kind = "mean"
+column = "post_answers"
+covariates = ["pre_answers"]
+higher_is_better = true
+
+[[guardrails]]
+name = "comments_posted"
+kind = "mean"
+column = "post_comments"
+covariates = ["pre_comments"]
+
+[[guardrails]]
+name = "accepted_answer_rate"
+kind = "ratio"
+column = "post_accepted"
+denominator = "post_answers"
+
+[method_options.cuped]
+zero_indicator = true

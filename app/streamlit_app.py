@@ -27,7 +27,9 @@ from expkit.stats import power as pw
 
 st.set_page_config(page_title="ExpKit", layout="wide")
 st.title("ExpKit")
-REAL_DATA = Path(__file__).resolve().parents[1] / "data" / "users_metrics.parquet"
+ROOT = Path(__file__).resolve().parents[1]
+REAL_DATA = ROOT / "data" / "users_metrics.parquet"
+RESULTS = ROOT / "results"
 
 
 @st.cache_data
@@ -43,8 +45,8 @@ st.caption(f"Experiment design and analysis. Simulations use the {POP_SOURCE} "
            f"({len(POP):,} users); assignment and effects are simulated.")
 
 
-tab_power, tab_aa, tab_peek, tab_analyze = st.tabs(
-    ["Sample size / MDE", "A/A simulator", "Peeking demo", "Analyze a CSV"])
+tab_power, tab_aa, tab_peek, tab_analyze, tab_results = st.tabs(
+    ["Sample size / MDE", "A/A simulator", "Peeking demo", "Analyze a CSV", "Validation results"])
 
 with tab_power:
     c1, c2, c3 = st.columns(3)
@@ -102,3 +104,40 @@ with tab_analyze:
             st.download_button("Download JSON", readout.to_json(), "readout.json")
         except (KeyError, ValueError) as e:
             st.error(str(e))
+
+
+@st.cache_data
+def figure_png(name: str, stamp: float) -> bytes:
+    """Render one result chart to PNG; `stamp` (newest input mtime) busts the cache on new results."""
+    import io
+
+    import matplotlib.pyplot as plt
+
+    from expkit.viz import FIGURES, draw
+
+    spec = next(f for f in FIGURES if f.name == name)
+    fig = draw(spec, RESULTS)
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png", dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    return buf.getvalue()
+
+
+with tab_results:
+    try:
+        from expkit.viz import FIGURES
+    except ImportError:
+        st.info("Install the charts extra to see results: pip install 'expkit[viz]'")
+        FIGURES = ()
+    ready = [f for f in FIGURES if all((RESULTS / i).exists() for i in f.inputs)]
+    if FIGURES and not ready:
+        st.info("No results yet. Run `make experiments` and `make readouts` on the real extract.")
+    for spec in ready:
+        sources = {pd.read_csv(RESULTS / i).get("data_source", pd.Series(["?"])).iloc[0]
+                   for i in spec.inputs if i.endswith(".csv")}
+        st.subheader(spec.title)
+        if sources != {"real"}:
+            st.warning(f"Built from {', '.join(sorted(sources))} data, not the real extract.")
+        st.image(figure_png(spec.name, max((RESULTS / i).stat().st_mtime for i in spec.inputs)))
+        st.markdown(f"**How to read it.** {spec.how_to_read}\n\n**What it shows.** {spec.takeaway}")
+        st.divider()

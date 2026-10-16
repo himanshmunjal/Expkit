@@ -35,3 +35,14 @@ def test_peeking_simulation_runs(app):
     app.button[1].click().run()
     assert not app.exception
     assert set(app.dataframe[-1].value["rule"]) >= {"naive_peeking", "obf", "msprt"}
+
+
+def test_results_tab_shows_documented_charts(app):
+    pytest.importorskip("matplotlib")
+    from expkit.viz import FIGURES
+    root = Path(APP).parents[1] / "results"
+    ready = [f for f in FIGURES if all((root / i).exists() for i in f.inputs)]
+    if not ready:
+        pytest.skip("no results present")
+    assert not app.exception
+    assert {f.title for f in ready} <= {h.value for h in app.subheader}

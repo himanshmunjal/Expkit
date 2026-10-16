@@ -74,6 +74,7 @@ def main() -> None:
     out = OUT if source == "real" else results_dir(source) / "example_readouts"   # D-055
     out.mkdir(parents=True, exist_ok=True)
     seeds = np.random.SeedSequence(a.seed).spawn(len(SCENARIOS))   # scenarios do not share draws
+    rows = []
     for (name, n, lift, drop, mde, expected), ss in zip(SCENARIOS, seeds, strict=True):
         n = min(n, len(df) // 5 if a.quick else int(len(df) / 2.2))   # build() samples 2.2 n users
         cfg = ExperimentConfig.from_dict({**CONFIG, "experiment": {**CONFIG["experiment"],
@@ -98,6 +99,10 @@ def main() -> None:
         hit = freq.get(expected, 0.0)
         flag = "ok" if hit >= 0.5 else f"UNEXPECTED (wanted {expected} in most draws)"
         print(f"{name:24s} n={n:>6,}  {expected:12s} in {hit:5.0%} of {runs} draws  [{dist}]  {flag}")
+        rows += [{"scenario": name, "n_per_arm": n, "lift": lift, "drop_fraction": drop, "mde": mde,
+                  "expected": expected, "decision": d, "share": float(p), "runs": runs,
+                  "data_source": source} for d, p in freq.items()]
+    pd.DataFrame(rows).to_csv(results_dir(source) / "example_readouts_summary.csv", index=False)
 
 
 if __name__ == "__main__":

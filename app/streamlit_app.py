@@ -7,13 +7,14 @@
 from __future__ import annotations
 
 import tomllib
+from pathlib import Path
 
 import pandas as pd
 import streamlit as st
 
 from expkit import ExperimentConfig, analyze
 from expkit.catalog import CATALOG
-from expkit.io import SyntheticSource
+from expkit.io import ParquetSource, SyntheticSource
 from expkit.sim import (
     PeekingSpec,
     SimulationSpec,
@@ -26,13 +27,20 @@ from expkit.stats import power as pw
 
 st.set_page_config(page_title="ExpKit", layout="wide")
 st.title("ExpKit")
-st.caption("Experiment design and analysis. Simulations here run on synthetic data unless "
-           "you upload your own.")
+REAL_DATA = Path(__file__).resolve().parents[1] / "data" / "users_metrics.parquet"
 
 
 @st.cache_data
-def population(n: int = 100_000) -> pd.DataFrame:
-    return SyntheticSource(n_users=n).load()
+def population(n: int = 100_000) -> tuple[pd.DataFrame, str]:
+    """The real extract when it exists (make extract), else the synthetic twin."""
+    if REAL_DATA.exists():
+        return ParquetSource(REAL_DATA).load(), "real Stack Overflow extract"
+    return SyntheticSource(n_users=n).load(), "SYNTHETIC data (run `make extract` for real data)"
+
+
+POP, POP_SOURCE = population()
+st.caption(f"Experiment design and analysis. Simulations use the {POP_SOURCE} "
+           f"({len(POP):,} users); assignment and effects are simulated.")
 
 
 tab_power, tab_aa, tab_peek, tab_analyze = st.tabs(
@@ -63,10 +71,10 @@ with tab_aa:
     runs = st.slider("Runs", 100, 2000, 500, 100)
     if st.button("Run A/A simulation"):
         m = CATALOG[metric]
-        methods = ("delta", "naive_ratio") if m.kind == "ratio" else ("welch", "cuped",
+        methods = ("jackknife_ratio", "delta", "naive_ratio") if m.kind == "ratio" else ("welch", "cuped",
                                                                       "mannwhitney")
         with st.spinner("simulating..."):
-            res = run_simulation(population(), SimulationSpec((m,), n, runs, 0.0, methods))
+            res = run_simulation(POP, SimulationSpec((m,), n, runs, 0.0, methods))
         st.dataframe(summarize(res)[["method", "runs", "rejection_rate", "rejection_ci_low",
                                      "rejection_ci_high", "ks_uniform_p", "coverage"]])
         st.caption("A calibrated method rejects ~5% of A/A tests and has uniform p-values.")
@@ -76,7 +84,7 @@ with tab_peek:
     runs_p = st.slider("Runs ", 200, 3000, 1000, 100)
     if st.button("Run peeking simulation"):
         with st.spinner("simulating 28 daily looks..."):
-            res = run_peeking_simulation(population(), PeekingSpec(CATALOG["answers_posted"],
+            res = run_peeking_simulation(POP, PeekingSpec(CATALOG["answers_posted"],
                                                                    5000, 28, runs_p, lift))
         st.dataframe(summarize_peeking(res))
         st.caption("With lift 0, rejection_rate is the false-positive rate of each rule.")

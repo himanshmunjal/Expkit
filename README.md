@@ -1,5 +1,9 @@
 # ExpKit
 
+[![ci](https://github.com/himanshmunjal/Expkit/actions/workflows/ci.yml/badge.svg)](https://github.com/himanshmunjal/Expkit/actions/workflows/ci.yml)
+![python](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue)
+![license](https://img.shields.io/badge/license-MIT-green)
+
 An A/B-testing toolkit (CUPED, delta-method ratio metrics, SRM checks, alpha-spending and
 mSPRT sequential tests, power/MDE) that is **validated, not assumed**: thousands of A/A tests
 and known-lift injections on real Stack Overflow user behaviour.
@@ -34,6 +38,12 @@ The four [example readouts](docs/example_readouts/) each run 200 draws and state
 the rules reach the intended decision: ship 96%, well-powered null 94%, inconclusive 88%,
 SRM-invalid 100%.
 
+![Peeking at an A/A test daily: naive testing vs alpha-spending and mSPRT](docs/figures/05_peeking.png)
+
+*Checking an A/A test every day for 28 days. The naive test's false-positive rate climbs to
+24–28%, while O'Brien-Fleming stays under 5%. All nine charts are explained in
+[docs/REPORT.md](docs/REPORT.md).*
+
 ## Quick start
 
 ```bash
@@ -44,7 +54,20 @@ make experiments-quick            # every experiment end-to-end on synthetic dat
 # real data (needs gcloud auth application-default login)
 make verify                       # choose T0 from table freshness
 make extract                      # T0 defaults to 2022-08-22 (data ends 2022-09-25)
-make profile && make experiments JOBS=-1 && make readouts && make report
+make profile && make experiments JOBS=-1 && make readouts && make report   # report also builds the figures
+```
+
+## Project layout
+
+```
+src/expkit/     the library: stats/, sequential/, assign/, effects/, sim/, report/, viz/,
+                plus the method registry, CLI (cli.py) and REST API (server.py)
+experiments/    the eight validation studies (A/A, CUPED, ratio, peeking, SRM, ...) + readouts
+data/           BigQuery SQL (verify.sql, extract.sql) and per-user preparation
+results/        summary CSVs and raw parquet from every study (synthetic runs in results/synthetic/)
+docs/           validation report, figures, example readouts, decision framework
+app/            Streamlit app
+tests/          unit, property and statistical tests (run in CI on Python 3.11 and 3.12)
 ```
 
 ## Use it from anywhere
@@ -76,3 +99,8 @@ def my_test(control, treatment, *, alpha, rng, **opts): ...
 - [DECISION.md](DECISION.md): every architecture and methodology decision, with rationale
 - [FLOW.md](FLOW.md): run order, call flow, file-creation order, study order
 - [docs/decision_framework.md](docs/decision_framework.md): ship / hold / extend rules
+- [docs/example_readouts/](docs/example_readouts/): four worked readouts (clear win, well-powered null, inconclusive, SRM failure)
+
+## License
+
+MIT

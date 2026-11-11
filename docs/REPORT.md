@@ -19,8 +19,8 @@ method is validated before it is trusted.
 |---|---|---|
 | 1 | **The delta method was unsafe for ratio metrics at small samples** (20.6% false positives at 100 users per arm, 10.4% at 1,000). A jackknife replacement brings this to 5.9% and 6.4% and is now the default. | Fig. 1, 2 |
 | 2 | **CUPED removes 63% of the variance for answers and 74% for comments**, matching theory within 1.5 points. The same test needs 2.7x and 3.8x fewer users. | Fig. 3 |
-| 3 | **Answers are hard to move detectably.** With CUPED, 80% power needs about a 15% lift at 20k users per arm (~7.5% at the full population). Binary activity needs only ~5%. | Fig. 4 |
-| 4 | **Checking results daily turns 5% false positives into 24-28%.** O'Brien-Fleming fixes it while keeping ~93% of the power. | Fig. 5 |
+| 3 | **Answers are hard to move detectably.** With CUPED, 80% power needs about a 15% lift at 20k users per arm (~7% using every user). Binary activity needs only ~5%. | Fig. 4 |
+| 4 | **Checking results daily turns 5% false positives into 24-28%.** O'Brien-Fleming fixes it while keeping 91-93% of the power. | Fig. 5 |
 | 5 | **mSPRT was mis-tuned and could never detect anything.** Re-scaling its prior to 3 standard errors fixed it. | Fig. 6 |
 | 6 | **Capping outliers gives power by measuring the wrong thing** (−56% bias, 2% CI coverage at p99). CUPED gets the same power without bias. | Fig. 7 |
 | 7 | **The SRM check misses small logging bugs** (catches a 5% user loss 61% of the time, a 2% loss 3%). 20 uncorrected metrics produce a false win 63% of the time. | Fig. 8 |
@@ -119,7 +119,7 @@ lift size and users per arm (darker = more users). The dotted line is the usual 
 **What it shows.**
 - **Binary activity is easy:** a 5% lift is found about 80% of the time at 20k users per arm.
 - **Answers are hard:** even with CUPED, a +10% lift at 20k per arm is found only 43% of the
-  time (Welch: 20%). About a **15% lift** is needed at that size, or ~7.5% using every user.
+  time (Welch: 20%). About a **15% lift** is needed at that size, or ~7% using every user (~89k per arm).
 - **Ratio metric:** at 1,000 users per arm, the delta method's apparent extra power at tiny
   lifts (11% at +0.5%) is just its false-positive excess. The jackknife is honest at 7%.
 
@@ -137,10 +137,10 @@ under a real lift, power against how much of the planned sample each rule used b
 **What it shows.**
 - **Naive peeking:** stopping at the first p < 0.05 finds a false winner in **24–28%** of null
   experiments, five times the promised rate.
-- **O'Brien-Fleming:** keeps false positives at ≤ 5%, retains about 93% of fixed-horizon power
+- **O'Brien-Fleming:** keeps false positives at ≤ 5%, retains 91-93% of fixed-horizon power
   (30% vs 33%; 46% vs 49%), and stops 8–13% earlier on average.
 - **Pocock:** also controls false positives but gives up more power.
-- **mSPRT:** the most conservative (0.8–1.4%), at about half the power.
+- **mSPRT:** the most conservative (0.8–1.4%), at about a third to two-fifths of the power.
 
 **Decision.** If you will look early, use O'Brien-Fleming. Use mSPRT only when the number of
 looks can't be planned (D-051).
@@ -183,8 +183,8 @@ Right: 20 metrics with no real effect, and how often at least one is flagged.
 - **SRM:** the check catches a 5% loss 61% of the time and a 2% loss only 3%. A passing check
   doesn't prove logging is clean.
 - **Multiple testing:** with no correction, 20 null metrics produce a false "win" **63%** of the
-  time. Holm or Bonferroni brings that to 5.9%. Benjamini-Hochberg controls a different error
-  rate (the share of false discoveries) and gives 6.2% here.
+  time. Holm or Bonferroni brings that to 6.0%. Benjamini-Hochberg controls a different error
+  rate (the share of false discoveries) and gives 6.3% here.
 
 ## 9. Does the decision engine make the right call?
 

@@ -392,8 +392,8 @@ Status: `accepted` · `provisional` (revisit once real data is in) · `supersede
 ### D-049 · Example readouts are replicated and sized from real-data power · accepted
 - **Finding:** on the real extract, scenario sizes chosen on synthetic data were badly
   underpowered. Real `answers_posted` is far more heavy-tailed. The CUPED 95% CI half-width is
-  about ±0.047 at 20k/arm and ±0.024 at the full population (~80k/arm), against a control mean of
-  ~0.46. **80% power needs ~15% lift at 20k/arm and ~7.5% even at the full population.**
+  about ±0.047 at 20k/arm and ±0.024 at the full population (~89k/arm), against a control mean of
+  ~0.46. **80% power needs ~15% lift at 20k/arm, ~7.5% at 80k/arm and ~7% even with every user (~89k/arm).**
   (Corrected 2026-10-17: an earlier version said ~14% at full population. That multiplied
   the power factor 2.8 by the CI half-width instead of the SE. Recomputed from the CUPED residual
   SD of 2.42; it agrees with the winsorization run, where +20% at 20k/arm was detected 92% of the time.)
@@ -405,8 +405,8 @@ Status: `accepted` · `provisional` (revisit once real data is in) · `supersede
   decision frequencies, so the selection is disclosed, never hidden. The new scenarios:
   clear win = 80k/arm with a +20% lift; well-powered null = 80k/arm with a pre-registered 10% MDE.
 - **Result (real data, 200 draws each):** clear win → ship 96%; well-powered null →
-  do_not_ship 94%; inconclusive → extend 86% (12% do_not_ship from guardrail false alarms at
-  n = 1,500); SRM → invalid 100%.
+  do_not_ship 94%; inconclusive → extend 88% (10% do_not_ship from guardrail false alarms at
+  n = 1,500, 2% ship); SRM → invalid 100%.
 - **Rejected:** hunting for a seed that "looks right" without disclosure.
 
 ## J. Decisions from the first full real-data run (2026-10-17)
@@ -437,9 +437,9 @@ Status: `accepted` · `provisional` (revisit once real data is in) · `supersede
   planned n). The `experiments/peeking.py` sweep over {0.5, 1, 2, 3, 5, 10} writes
   `results/msprt_tau_sweep.csv`. Power peaks at 3–5 SE for both metrics, and A/A false
   positives are ≤ 1.5% at every τ.
-- **Trade-off, documented:** at the planned horizon, mSPRT has about half the power of a
+- **Trade-off, documented:** at the planned horizon, mSPRT has about a third to two-fifths of the power of a
   fixed-horizon test (answers +20%: 10% vs 33%; active +5%: 21% vs 49%). It buys validity under
-  unlimited peeking. **O'Brien-Fleming keeps ~93% of the fixed-horizon power** (30% vs 33%;
+  unlimited peeking. **O'Brien-Fleming keeps 91–93% of the fixed-horizon power** (30% vs 33%;
   46% vs 49%) and stops early on average. OBF is the recommended monitoring rule when the
   number of looks is planned.
 
@@ -512,6 +512,19 @@ Status: `accepted` · `provisional` (revisit once real data is in) · `supersede
 - **Fact-check during writing:** one figure from the truncated first extract (max comments 5,575)
   had survived into the draft. The current extract's maximum is 1,898; this was corrected before
   publishing.
+
+### D-058 · Published numbers are audited against a fresh run · accepted
+- **Finding:** on 2026-10-25 the full suite (115 tests, 91% line coverage), every experiment and
+  the four readouts were re-run on the real extract. All `results/` summaries came out
+  byte-identical to the saved ones, so the seeds make the study fully reproducible. Comparing
+  every claim in the README and docs against them found five wording errors, none of which
+  changed a conclusion.
+- **Fixed:** OBF keeps **91-93%** of fixed-horizon power (not "~93%"); mSPRT keeps **31-42%**
+  (not "about half" / "40-60%"); the full-population detectability is **~7% at ~89k/arm**
+  (7.5% is the figure at the 80k/arm the readouts use); Holm is **6.0%** and BH **6.3%**
+  everywhere; D-049's inconclusive scenario is **88%** extend (it said 86%).
+- **Rule going forward:** a number in prose must be traceable to a row in `results/` or to a
+  command in `FLOW.md`.
 
 ---
 

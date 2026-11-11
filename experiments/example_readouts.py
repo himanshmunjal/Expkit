@@ -21,7 +21,7 @@ OUT = ROOT / "docs" / "example_readouts"
 SCENARIOS = [
     # name, n_per_arm, lift, drop_fraction, relative MDE, expected decision
     # At 20k/arm an 8% lift shipped in only 28% of draws on the real data (CI ~+-0.047 vs an
-    # effect of ~0.037). 80% power needs ~15% lift at 20k/arm, ~7.5% at full population (D-049).
+    # effect of ~0.037). 80% power needs ~15% lift at 20k/arm, ~7.5% at 80k/arm, ~7% with every user (D-049).
     ("1_clear_win", 80_000, 0.20, 0.0, 0.05, "ship"),
     # On the real data the CUPED CI at 60k/arm is ~+-0.027 against a 5% MDE of ~0.023, so a
     # null can never be declared there. Use the whole population and a 10% MDE (DECISION D-049).

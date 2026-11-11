@@ -33,13 +33,13 @@ extract (DECISION D-050 to D-054):
 | Binary | **Welch** (or CUPED if a pre-period exists) | none | Calibrated at all sizes tested |
 
 **Sample size.** `answers_posted` is hard to move detectably. With CUPED, 80% power needs
-about a **15% lift at 20k users per arm** and still ~7.5% at the full population (~80k/arm). Pick primary metrics with the
+about a **15% lift at 20k users per arm** and still ~7% using every user (~89k/arm). Pick primary metrics with the
 power calculator before launch, not after.
 
-**Monitoring.** If you will look early, use **O'Brien-Fleming**. It keeps about 93% of
+**Monitoring.** If you will look early, use **O'Brien-Fleming**. It keeps 91–93% of
 fixed-horizon power and stops early on average. Use mSPRT only when the number of looks is
-open-ended: it is valid under unlimited peeking, but at a fixed horizon it has about half the
-power. Daily naive peeking gave 24–28% false positives.
+open-ended: it is valid under unlimited peeking, but at a fixed horizon it has about a third to
+two-fifths of the power. Daily naive peeking gave 24–28% false positives.
 
 **SRM sensitivity.** At 20k users, the p < 0.001 check caught a 5% loss of treatment users only
 61% of the time, and a 2% loss 3% of the time. A passing SRM check does not prove that logging

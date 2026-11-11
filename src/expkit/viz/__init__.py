@@ -72,9 +72,9 @@ FIGURES: tuple[FigureSpec, ...] = (
         "declared significant by each day. Right: with a real lift, power against the average share of the "
         "planned sample used before stopping.",
         "Stopping at the first p < 0.05 finds a false winner in 24-28% of null experiments. O'Brien-Fleming "
-        "and Pocock keep false positives at or below ~5%, and O'Brien-Fleming keeps about 93% of fixed-horizon "
+        "and Pocock keep false positives at or below ~5%, and O'Brien-Fleming keeps 91-93% of fixed-horizon "
         "power (30% vs 33%; 46% vs 49%) while stopping 8-13% earlier on average. mSPRT is the most "
-        "conservative (0.8-1.4%) and gives up about half the power."),
+        "conservative (0.8-1.4%) and gives up about a third to two-fifths of the power."),
     FigureSpec(
         "06_msprt_tau_sweep", charts.msprt_tau_sweep, ("msprt_tau_sweep.csv",),
         "Tuning mSPRT",
@@ -102,8 +102,8 @@ FIGURES: tuple[FigureSpec, ...] = (
         "least one flagged?",
         "SRM catches a 5% loss 61% of the time and a 2% loss only 3%, so a passing check does not prove "
         "logging is clean. Without correction, 20 null metrics produce a false 'win' 63% of the time; Holm "
-        "or Bonferroni bring it to 5.9%, and Benjamini-Hochberg (which controls a different error rate) "
-        "to 6.2%."),
+        "or Bonferroni bring it to 6.0%, and Benjamini-Hochberg (which controls a different error rate) "
+        "to 6.3%."),
     FigureSpec(
         "09_readout_decisions", charts.readout_decisions, ("example_readouts_summary.csv",),
         "Ship decisions in repeated experiments",

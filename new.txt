@@ -1,0 +1,77 @@
+Analyse this repository and produce two files for my portfolio website's project page:
+
+  portfolio-export/Expkit.md    — a project write-up in a strict Markdown format
+  portfolio-export/Expkit.png   — an architecture diagram of this project
+
+Slug: Expkit
+
+STEP 1: UNDERSTAND THE PROJECT
+Read the README, the source code, configs, Dockerfiles, CI files, notebooks, and any benchmark or evaluation outputs. Work out the real architecture from the code: the components, how data or requests flow between them, storage, external services, and how it's built and deployed. Collect only results that were actually measured (accuracy, latency, throughput, hit rate, etc.) and note where each number came from.
+
+STEP 2: WRITE portfolio-export/Expkit.md IN EXACTLY THIS STRUCTURE
+
+---
+intro: <1–2 sentences on ONE line: what it is + the
+caption: <1 sentence on ONE line: what the architecture diagram shows, following the flow left to right>
+---
+
+## About
+
+Two short paragraphs: what the project is, and the qers. Put the core question in **bold**.
+
+## Architecture
+
+One or two paragraphs walking through the componentss flow (input → processing → storage → output), using exactly the same component names as the diagram.
+
+## How it's implemented
+
+### <Component or design decision>
+
+Paragraph or bullets: what was built and why that choice was made.
+
+(3–5 of these ### subsections in total)
+
+## Tech stack
+
+| Layer | Choice | Why |
+|---|---|---|
+| ... | ... | ... |
+
+(one row per layer: language, framework, data/ML, storage, infra/CI, testing)
+
+## Results
+
+If measured numbers exist: a table with columns | Measure | Baseline | Best |, with the best value in **bold**, followed by 1–2
+sentences interpreting it. If nothing was measured, rds. NEVER invent or estimate numbers.
+
+## What I'd do differently
+
+3–4 bullets: honest limitations and next steps.
+
+FORMAT RULES (my site uses a minimal custom Markdownders wrong)
+- No "# Title" heading at the top.
+- Front matter contains ONLY intro and caption, each
+- Write every paragraph on ONE line. Never hard-wrap: a line break inside a paragraph shows as a visible break.
+- Every list item on ONE line. No nested or indented
+- Only "## " and "### " headings. Never "####" or deeper.
+- Inline formatting allowed: **bold**, *italic* (astcores_), `code`, [text](https://...).
+- Blocks allowed: "- " bullets, "1. " numbered lists, "> " single-line quotes, --- rules, ``` fenced code, pipe tables with a |---|
+separator row.
+- No images, no HTML, no emojis, no footnotes, no task lists.
+- Tone: first person, plain and specific, like an enrt sentences. No buzzwords (leveraged, cutting-edge,seamless, robust, state-of-the-art, revolutionary).
+- Length: 400–800 words.
+
+STEP 3: MAKE THE ARCHITECTURE DIAGRAM portfolio-expo
+- Write it as a hand-authored SVG first (portfolio-export/Expkit.svg), then render it to PNG.
+- Layout: left-to-right flow. Group components into  Client / API / Processing / Storage / Output). Label every arrow with what travels on it (HTTP request, events, features, predictions, ...).
+- Component names must exactly match the ## Architec
+- Style: white background, dark grey (#222) strokes and text, one muted accent colour for the main data path, a system sans-serif
+font, text at least 14px, generous spacing. No shadoutter.
+- Size: about 1600×900, rendered at 2x. It must still be readable when shown 800px wide.
+- Render with whatever works here: rsvg-convert, `np a headless browser (Playwright/Puppeteer). Don't add anything to this repo's dependencies.
+- Open the PNG and actually look at it. Fix overlappr crossing arrows, then re-render until it's clean.
+
+STEP 4: CHECK AND REPORT
+- Re-read the .md against every FORMAT RULE above and fix any violation.
+- Don't modify any existing files in this repo.
+- When done, tell me: the file paths, the word count, where each number in Results came from, and anything you assumed about the architecture.

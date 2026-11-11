@@ -126,7 +126,7 @@ html { scroll-behavior: smooth; }
     <li><span class="n">01</span><span><strong>The delta method was unsafe for ratio metrics at small samples:</strong> 20.6% false positives at 100 users per arm instead of 5%. A jackknife replacement brings it to 5.9% and is now the default.</span><a class="fig" href="#f2">Fig. 2</a></li>
     <li><span class="n">02</span><span><strong>CUPED removes 63% of the variance for answers and 74% for comments,</strong> matching theory within 1.5 points. The same test needs 2.7x to 3.8x fewer users.</span><a class="fig" href="#f3">Fig. 3</a></li>
     <li><span class="n">03</span><span><strong>Answers are hard to move detectably.</strong> With CUPED, 80% power needs about a 15% lift at 20k users per arm. Binary activity needs about 5%.</span><a class="fig" href="#f4">Fig. 4</a></li>
-    <li><span class="n">04</span><span><strong>Checking results daily turns 5% false positives into 24–28%.</strong> O'Brien-Fleming fixes it and keeps about 93% of the power.</span><a class="fig" href="#f5">Fig. 5</a></li>
+    <li><span class="n">04</span><span><strong>Checking results daily turns 5% false positives into 24–28%.</strong> O'Brien-Fleming fixes it and keeps 91-93% of the power.</span><a class="fig" href="#f5">Fig. 5</a></li>
     <li><span class="n">05</span><span><strong>mSPRT was mis-tuned and could never detect anything.</strong> Scaling its prior to 3 standard errors fixed it.</span><a class="fig" href="#f6">Fig. 6</a></li>
     <li><span class="n">06</span><span><strong>Capping outliers buys power by measuring the wrong thing:</strong> −56% bias, and the CI contains the true lift 2% of the time. CUPED gets the same power without bias.</span><a class="fig" href="#f7">Fig. 7</a></li>
     <li><span class="n">07</span><span><strong>The SRM check misses small logging bugs,</strong> and 20 uncorrected metrics produce a false win 63% of the time.</span><a class="fig" href="#f8">Fig. 8</a></li>
@@ -232,12 +232,12 @@ html { scroll-behavior: smooth; }
 <section class="finding wide" id="f5" aria-labelledby="h5">
   <div class="col finding-head"><span class="no">Fig. 5</span>
     <h2 id="h5">What happens when you check results every day?</h2></div>
-  <figure><img src="figures/05_peeking.png" alt="Peeking and sequential tests: Stopping at the first p &lt; 0.05 finds a false winner in 24-28% of null experiments. O&#x27;Brien-Fleming and Pocock keep false positives at or below ~5%, and O&#x27;Brien-Fleming keeps about 93% of fixed-horizon power (30% vs 33%; 46% vs 49%) while stopping 8-13% earlier on average. mSPRT is the most conservative (0.8-1.4%) and gives up about half the power."
+  <figure><img src="figures/05_peeking.png" alt="Peeking and sequential tests: Stopping at the first p &lt; 0.05 finds a false winner in 24-28% of null experiments. O&#x27;Brien-Fleming and Pocock keep false positives at or below ~5%, and O&#x27;Brien-Fleming keeps 91-93% of fixed-horizon power (30% vs 33%; 46% vs 49%) while stopping 8-13% earlier on average. mSPRT is the most conservative (0.8-1.4%) and gives up about a third to two-fifths of the power."
        ><figcaption>Fig. 5 · Peeking and sequential tests</figcaption></figure>
   <div class="col">
     <div class="notes">
       <div><h3>How to read it</h3><p>28 daily looks at an experiment with 10k users per arm. Left panels: share of A/A experiments declared significant by each day. Right: with a real lift, power against the average share of the planned sample used before stopping.</p></div>
-      <div><h3>What it shows</h3><p>Stopping at the first p &lt; 0.05 finds a false winner in 24-28% of null experiments. O&#x27;Brien-Fleming and Pocock keep false positives at or below ~5%, and O&#x27;Brien-Fleming keeps about 93% of fixed-horizon power (30% vs 33%; 46% vs 49%) while stopping 8-13% earlier on average. mSPRT is the most conservative (0.8-1.4%) and gives up about half the power.</p></div>
+      <div><h3>What it shows</h3><p>Stopping at the first p &lt; 0.05 finds a false winner in 24-28% of null experiments. O&#x27;Brien-Fleming and Pocock keep false positives at or below ~5%, and O&#x27;Brien-Fleming keeps 91-93% of fixed-horizon power (30% vs 33%; 46% vs 49%) while stopping 8-13% earlier on average. mSPRT is the most conservative (0.8-1.4%) and gives up about a third to two-fifths of the power.</p></div>
     </div>
     <p class="decision"><b>What the toolkit does about it.</b> If you will look early, use O&#x27;Brien-Fleming; use mSPRT only when looks can&#x27;t be planned. (D-051)</p>
   </div>
@@ -277,12 +277,12 @@ html { scroll-behavior: smooth; }
 <section class="finding wide" id="f8" aria-labelledby="h8">
   <div class="col finding-head"><span class="no">Fig. 8</span>
     <h2 id="h8">Two safety checks: SRM and multiple testing</h2></div>
-  <figure><img src="figures/08_srm_and_multiplicity.png" alt="SRM sensitivity and multiple testing: SRM catches a 5% loss 61% of the time and a 2% loss only 3%, so a passing check does not prove logging is clean. Without correction, 20 null metrics produce a false &#x27;win&#x27; 63% of the time; Holm or Bonferroni bring it to 5.9%, and Benjamini-Hochberg (which controls a different error rate) to 6.2%."
+  <figure><img src="figures/08_srm_and_multiplicity.png" alt="SRM sensitivity and multiple testing: SRM catches a 5% loss 61% of the time and a 2% loss only 3%, so a passing check does not prove logging is clean. Without correction, 20 null metrics produce a false &#x27;win&#x27; 63% of the time; Holm or Bonferroni bring it to 6.0%, and Benjamini-Hochberg (which controls a different error rate) to 6.3%."
        ><figcaption>Fig. 8 · SRM sensitivity and multiple testing</figcaption></figure>
   <div class="col">
     <div class="notes">
       <div><h3>How to read it</h3><p>Left: a simulated logging bug drops a share of treatment users; how often does the chi-square sample-ratio check (p &lt; 0.001) catch it? Right: 20 metrics with no real effect; how often is at least one flagged?</p></div>
-      <div><h3>What it shows</h3><p>SRM catches a 5% loss 61% of the time and a 2% loss only 3%, so a passing check does not prove logging is clean. Without correction, 20 null metrics produce a false &#x27;win&#x27; 63% of the time; Holm or Bonferroni bring it to 5.9%, and Benjamini-Hochberg (which controls a different error rate) to 6.2%.</p></div>
+      <div><h3>What it shows</h3><p>SRM catches a 5% loss 61% of the time and a 2% loss only 3%, so a passing check does not prove logging is clean. Without correction, 20 null metrics produce a false &#x27;win&#x27; 63% of the time; Holm or Bonferroni bring it to 6.0%, and Benjamini-Hochberg (which controls a different error rate) to 6.3%.</p></div>
     </div>
     <p class="decision"><b>What the toolkit does about it.</b> SRM gates every readout. Holm controls several decision metrics; guardrails stay uncorrected on purpose. (D-027, D-028, D-033)</p>
   </div>
